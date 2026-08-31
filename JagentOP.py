@@ -155,8 +155,11 @@ The response must always be valid Python code and nothing else.
                 model=self.chatm,
                 messages=self.memory,
                 tools=self.tools,
-                think=True
+                think=False
             )
+            print("CONTENT:", repr(result.message.content))
+            print("TOOL CALLS:", result.message.tool_calls)
+            print("THINKING:", repr(result.message.thinking))
 
             if result.message.tool_calls:
 
@@ -225,6 +228,13 @@ The response must always be valid Python code and nothing else.
         code = result.message.content
 
         try:
+            code = code.strip()
+
+            if code.startswith("```python"):
+                code = code[len("```python"):].strip()
+
+            if code.endswith("```"):
+                code = code[:-3].strip()
             
             compile(code, "<generated_code>", "exec")
             exec(code)
