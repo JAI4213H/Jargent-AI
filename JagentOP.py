@@ -98,7 +98,8 @@ Here is the memory that needs to be summarized:
                 "role":"assistant",
                 "content" : f"{result.message.content}"
             })
+            
             print(result.message.content)
-            self.response = result.message.content
+            counter +=1
 
 
