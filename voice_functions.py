@@ -47,4 +47,4 @@ def get_speech():
 
 
 def getall():
-    return get_text(get_speech)
+    return get_text(get_speech())
