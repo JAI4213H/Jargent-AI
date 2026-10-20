@@ -46,4 +46,5 @@ def get_speech():
     return name
 
 
-get_text(get_speech())
+def getall():
+    return get_text(get_speech)
