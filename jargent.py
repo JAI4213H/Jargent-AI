@@ -79,7 +79,7 @@ def oss():
     
     client = OpenAI(
         base_url = "https://integrate.api.nvidia.com/v1",
-        api_key = "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"
+        api_key = "KEY"
     )
 
     completion = client.chat.completions.create(
