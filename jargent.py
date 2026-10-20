@@ -92,7 +92,7 @@ def oss():
     out = completion.choices[0].message
     return out
 
-inp = str(input("Enter Sh. "))
+inp = str(input("Enter Prompt. "))
 memory.append({"role": "user","content": fr"{inp}"})
 
 while True:
