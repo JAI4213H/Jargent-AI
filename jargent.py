@@ -6,18 +6,21 @@ import os
 import time as t
 import subprocess
 import json
+import voice_functions as vf
+from datetime import datetime
 
 memory = [
     {
         "role": "system",
-        "content": """
+        "content": fr"""
 You are JARGENT, an AI agent operating on the user's Windows computer.
 
+Current date and time: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Time will be provided so that user can ask for other previous and time based responses
 ENVIRONMENT:
 - Operating system: Windows
 - Username: jaita
 - Shell: PowerShell
-- Downloads directory: C:\\Users\\jaita\\Downloads
 - You can execute system operations using the available tools.
 
 CORE RULES:
@@ -37,10 +40,11 @@ CORE RULES:
 14. If the request is ambiguous and acting could cause unintended changes, ask the user for clarification.
 
 SAFETY:
-15. Never delete files, overwrite important data, format drives, change security settings, or perform other destructive operations without explicit user authorization.
+15. Never delete files until user says it, overwrite important data, format drives, change security settings, or perform other destructive operations without explicit user authorization.
 16. Never expose passwords, API keys, access tokens, or other secrets.
 17. Do not run downloaded scripts or unknown executables without explicit authorization.
 18. Prefer the smallest action that accomplishes the user's goal.
+
 
 TOOL-CALLING BEHAVIOR:
 19. If an operation requires a tool, issue a tool call rather than merely describing the command.
@@ -48,6 +52,8 @@ TOOL-CALLING BEHAVIOR:
 21. If multiple independent actions are needed, perform them only when their order and safety are clear.
 22. If a tool returns an error, report the actual error if it cannot be resolved.
 23. After completing the task, give a concise summary of what was actually done.
+24. Everytime make backup file before making change to a file or a folder
+25. Inform user that backup has been creates
 
 Be accurate, cautious, and goal-oriented. Correctness is more important than speed.
 """
@@ -66,8 +72,6 @@ def systemfile_tool(a:str,status:str):
     print(status)
     return result
 
-
-
 tools = [convert_to_openai_tool(i) for i in [systemfile_tool]]
 
 def oss():
@@ -75,7 +79,7 @@ def oss():
     
     client = OpenAI(
         base_url = "https://integrate.api.nvidia.com/v1",
-        api_key = "API_KEY"
+        api_key = "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"
     )
 
     completion = client.chat.completions.create(
@@ -92,31 +96,41 @@ def oss():
     out = completion.choices[0].message
     return out
 
-inp = str(input("Enter Prompt. "))
-memory.append({"role": "user","content": fr"{inp}"})
-
 while True:
-    a = oss()
-    print("Enabled Model------------------------#######")
-    if a.tool_calls:
-        memory.append(a.model_dump(exclude_none=True))
+    v_userinput = vf.getall()
+    if v_userinput != "" or not None:
         
-
-        for i in a.tool_calls:
-            
-            
-            tool_args = json.loads(i.function.arguments)
-            result = systemfile_tool.invoke(tool_args)
-            print("\n\n\n",tool_args,"\n\n")
-
-            memory.append({
-                "role": "tool",
-                "tool_call_id": i.id,
-                "content": str(result)})
-            
-            
-
+        inp = v_userinput
+        memory.append({"role": "user","content": fr"{inp}"})
     else:
-        memory.append({"role": "assistant", "content": a.content or ""})
-        print(a.content)
+        inp = str(input("Enter Promot: "))
+        memory.append({"role": "user","content": fr"{inp}"})
+    
+    
+    if (v_userinput.lower() == "exit" ) or (inp.lower() == "exit"):
         break
+    while True:
+        a = oss()
+        print("Enabled Model------------------------#######")
+        if a.tool_calls:
+            memory.append(a.model_dump(exclude_none=True))
+            
+
+            for i in a.tool_calls:
+                
+                
+                tool_args = json.loads(i.function.arguments)
+                result = systemfile_tool.invoke(tool_args)
+                print("\n\n\n",tool_args,"\n\n")
+
+                memory.append({
+                    "role": "tool",
+                    "tool_call_id": i.id,
+                    "content": str(result)})
+                
+                
+
+        else:
+            memory.append({"role": "assistant", "content": a.content + f"Current date and time: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}" or ""})
+            print(a.content)
+            break
