@@ -9,31 +9,22 @@ import json
 import voice_functions as vf
 from datetime import datetime
 import jargentfunctions as jf
+from groq import Groq
+from jargenttools import get_tools
 
 memory = jf.load_memory()
 print("Memory Loaded Sucessfully")
 
-@tool
-def systemfile_tool(a:str,status:str):
-    """used to execute a cmd/powershell command to perform basic system operations. Input will be the command for cmd to perform.
-    Here status is to tell what commend is it for if its for adding a folder status may be Adding the file."""
-    result = subprocess.run(
-        ["powershell", "-NoProfile", "-NonInteractive", "-Command", a],
-        capture_output=True,
-        text=True,
-        timeout=60
-    )
-    print(status)
-    return result
+tools,tools_dir = get_tools()
+print("available tools ", tools_dir)
 
-tools = [convert_to_openai_tool(i) for i in [systemfile_tool]]
-
-def oss():
+#SLOW
+def nimoss():
     global memory
     
     client = OpenAI(
         base_url = "https://integrate.api.nvidia.com/v1",
-        api_key = "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"
+        api_key = "NVIDIA_API_KEY"
     )
 
     completion = client.chat.completions.create(
@@ -49,6 +40,29 @@ def oss():
 
     out = completion.choices[0].message
     return out
+#fast
+def groqmodel():
+    global memory
+    client = Groq()
+    completion = client.chat.completions.create(
+        model="openai/gpt-oss-120b",
+        messages=memory,
+        temperature=1,
+        max_completion_tokens=1000,
+        top_p=1,
+        reasoning_effort="medium",
+        stream=False,
+        stop=None,
+        tools=tools,
+        tool_choice="auto"
+        
+    )
+    return completion.choices[0].message
+
+
+
+
+
 
 while True:
     v_userinput = vf.getall()
@@ -67,7 +81,7 @@ while True:
         break
     while True:
         print("SENT REQ TO BACKEND")
-        a = oss()
+        a = groqmodel()
         print("Enabled Model------------------------#######")
         if a.tool_calls:
             memory.append(a.model_dump(exclude_none=True))
@@ -75,9 +89,10 @@ while True:
 
             for i in a.tool_calls:
                 
-                
+                tool_name = i.function.name
                 tool_args = json.loads(i.function.arguments)
-                result = systemfile_tool.invoke(tool_args)
+                
+                result = tools_dir[tool_name].invoke(tool_args)
                 print("\n\n\n",tool_args,"\n\n")
 
                 memory.append({
@@ -89,5 +104,5 @@ while True:
 
         else:
             memory.append({"role": "assistant", "content": a.content + f"Current date and time: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}" or ""})
-            print(a.content)
+            vf.tovoice(a.content)
             break
