@@ -4,6 +4,8 @@ from scipy.io.wavfile import write
 import tkinter as tk
 import uuid
 import numpy as np
+import wave
+from piper import PiperVoice
 
 model = WhisperModel("small", device="cpu", compute_type="int8")
 pipeline = BatchedInferencePipeline(model=model)
@@ -60,3 +62,16 @@ def getall():
         return None
 
     return get_text(speech)
+
+
+
+def tovoice(output: str):
+    voice = PiperVoice.load("en_US-lessac-medium.onnx")
+
+    text = output
+
+    with wave.open("output.wav", "wb") as wav_file:
+        voice.synthesize_wav(text, wav_file)
+
+    print("Speech generated!")
+    
