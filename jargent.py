@@ -100,9 +100,10 @@ while True:
                     "tool_call_id": i.id,
                     "content": str(result)})
                 
-                
+            print("Tool execution completed, Sending results back to model...")
+            
 
         else:
             memory.append({"role": "assistant", "content": a.content + f"Current date and time: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}" or ""})
-            vf.tovoice(a.content)
+            print(a.content)
             break
