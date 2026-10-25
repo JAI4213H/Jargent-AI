@@ -73,6 +73,10 @@ def systemfile_tool(a: str, status: str) -> str:
     'a' is the command to execute.
     'status' briefly describes the operation.
     Return concise output to the model.
+
+    For every command, filter at the source, select only required properties,
+    limit result counts, and return compact output. Do not dump raw command
+    output when a filtered summary is enough.
     """
     print(f"[JARGENT] {status}")
     start = time.perf_counter()
