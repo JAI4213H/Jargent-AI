@@ -30,7 +30,7 @@ def vision(file_name, prompt="Describe this image."):
     Images smaller than 32 pixels in either dimension are enlarged in memory.
     """
 
-    with Image.open(file_name) as source:
+    with Image.open(fr"{file_name}") as source:
         width, height = source.size
         if width < 32 or height < 32:
             source = source.resize((max(width, 32), max(height, 32)))
