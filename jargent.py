@@ -61,7 +61,7 @@ def groqmodel():
 
 
 while True:
-    wait_for_wake_word()
+
     print("Recording is ON")
     vc_input = getall()
     
@@ -73,16 +73,16 @@ while True:
         inp = vc_input
         
     if inp.lower() == "exit.":
-        jf.exit()
+        jf.exit(memory)
         break
         
     memory.append({"role": "user","content": fr"{inp}"})
     
 
     while True:
-        print("SENT REQ TO BACKEND")
+        
         a = groqmodel()
-        print("Enabled Model------------------------#######")
+        print("SENT REQ TO BACKEND\n")
         if a.tool_calls:
             memory.append(a.model_dump(exclude_none=True))
 
@@ -90,7 +90,11 @@ while True:
                 tool_name = clean_tool_name(call.function.name)
                 tool_args = json.loads(call.function.arguments)
                 print("Calling tool", tool_name)
-
+                try:
+                    print("\n\n",tool_args["status"],"\n\n")
+                except Exception as e:
+                    print("Error showing status, ",e)
+                    
                 tool_function = tools_dir[tool_name]
                 if hasattr(tool_function, "invoke"):
                     result = tool_function.invoke(tool_args)

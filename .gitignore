@@ -1,0 +1,10 @@
+__pycache__/
+.ruff_cache/
+.vscode/
+voice_notes/
+screen_images/
+*.wav
+*.onnx
+*.onnx.json
+tempCodeRunnerFile.py
+*.pyc

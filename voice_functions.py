@@ -111,6 +111,11 @@ def clean_for_speech(text: str):
     text = re.sub(r"`([^`]*)`", r"\1", text)
     text = re.sub(r"\[([^]]+)\]\([^)]*\)", r"\1", text)
     text = re.sub(
+        r"[A-Za-z]:\\(?:[^\\\n]+\\)*([^\\\n]+)",
+        r"\1",
+        text
+    )
+    text = re.sub(
         r"\b[\w.-]+\.(xlsx|xlsm|csv|pdf|docx|pptx)\b",
         "",
         text,

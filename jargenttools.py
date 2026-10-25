@@ -1,6 +1,7 @@
 
 import os
 import base64
+import shutil
 from io import BytesIO
 from openai import OpenAI
 import subprocess
@@ -15,6 +16,9 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from pathlib import Path
 from openpyxl.utils import get_column_letter
+import subprocess
+import time
+from langchain_core.tools import tool
 
 
 
@@ -61,9 +65,6 @@ def vision(file_name, prompt="Describe this image."):
     return response.choices[0].message.content
 
 
-import subprocess
-import time
-from langchain_core.tools import tool
 
 
 @tool
@@ -71,7 +72,7 @@ def systemfile_tool(a: str, status: str) -> str:
     """
     Execute a CMD or PowerShell command for system operations.
     'a' is the command to execute.
-    'status' briefly describes the operation.
+    'status' briefly describes the operation as I am [doing this operation].
     Return concise output to the model.
 
     For every command, filter at the source, select only required properties,
@@ -138,11 +139,55 @@ def take_screenshot():
     return name
 
 
+@tool
+def file_tool(operation: str, source: str, destination: str = "") -> dict:
+    """Move, copy, or rename one file and verify the result."""
+    source_path = Path(source).expanduser()
+
+    if not source_path.is_file():
+        return {"status": "error", "message": "Source file not found."}
+
+    destination_path = (
+        source_path.with_name(destination)
+        if operation == "rename"
+        else Path(destination).expanduser()
+    )
+
+    try:
+        destination_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if operation == "move":
+            shutil.move(source_path, destination_path)
+        elif operation == "copy":
+            shutil.copy2(source_path, destination_path)
+        elif operation == "rename":
+            source_path.rename(destination_path)
+        else:
+            return {
+                "status": "error",
+                "message": "Supported operations: move, copy, rename."
+            }
+
+        verified = destination_path.is_file()
+        if operation in ("move", "rename"):
+            verified = verified and not source_path.exists()
+
+        return {
+            "status": "success" if verified else "error",
+            "verified": verified,
+            "operation": operation,
+            "file": destination_path.name
+        }
+    except Exception as exc:
+        return {"status": "error", "message": str(exc)}
+
+
 
 @tool
-def excel_tool(path: str, operations_json: str) -> dict:
+def excel_tool(path: str, operations_json: str,status:str) -> dict:
     """
     Use this tool for ALL operations involving Excel workbooks.
+    
 
     Use it to inspect workbook sheets and headers, read data,
     create or edit columns, calculate values, apply formulas,
@@ -166,6 +211,7 @@ def excel_tool(path: str, operations_json: str) -> dict:
     sort_rows, delete_rows, delete_columns, remove_duplicates,
     style_header, and autofit_columns. Do not ask the user for action names;
     use this schema directly.
+    'status' briefly describes the operation as I am [doing this operation].
     """
     file_path = Path(path).expanduser()
 
@@ -501,7 +547,7 @@ def clean_tool_name(name: str) -> str:
 
 
 
-tool = [vision, systemfile_tool, take_screenshot, excel_tool]
+tool = [vision, systemfile_tool, take_screenshot, file_tool, excel_tool]
 
 def get_tools():
     global tool
