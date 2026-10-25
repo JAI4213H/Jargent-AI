@@ -5,6 +5,7 @@ from datetime import datetime
 import jargentfunctions as jf
 from groq import Groq
 from jargenttools import get_tools, clean_tool_name
+from voice_functions import getall, tovoice, wait_for_wake_word
 
 MAX_CONTEXT_MESSAGES = 12
 
@@ -60,10 +61,22 @@ def groqmodel():
 
 
 while True:
-
-    inp = str(input("Enter Promot: "))
-    memory.append({"role": "user","content": fr"{inp}"})
+    wait_for_wake_word()
+    print("Recording is ON")
+    vc_input = getall()
     
+    if vc_input is None:
+        print("No Speech Detected")
+        inp = str(input("Enter Promot: "))
+    
+    else:
+        inp = vc_input
+        
+    if inp.lower() == "exit.":
+        jf.exit()
+        break
+        
+    memory.append({"role": "user","content": fr"{inp}"})
     
 
     while True:
@@ -103,7 +116,11 @@ while True:
             answer = a.content or ""
             memory.append({
                 "role": "assistant",
-                "content": answer + f"\nCurrent date and time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-            })
+                "content": answer + f"\nCurrent date and time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"})
             print(answer)
+            try:
+                tovoice(answer)
+            except Exception as e:
+                print("Error generating voice: ", e)
+                
             break
