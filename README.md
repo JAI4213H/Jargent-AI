@@ -45,15 +45,27 @@ The result is returned to the model
 JARGENT reports the result by text and voice
 ```
 
-## Setup
+## Setup on another Windows laptop
 
-1. Create a Python environment with the project dependencies.
-2. Set the `GROQ_API_KEY` environment variable.
-3. Keep the Piper voice model files in the project directory. They are intentionally not stored in Git.
-4. Run:
+Install Python 3.10 or newer, download this project, open PowerShell in its folder, and run:
 
 ```powershell
-python jargent.py
+Set-ExecutionPolicy -Scope Process Bypass
+.\setup.ps1
+```
+
+The setup script installs the Python packages, downloads the Whisper and Piper voice models, asks for your Groq API key, and saves it only in your Windows user environment. The model files are downloaded locally and are not stored in Git.
+
+Start JARGENT later with:
+
+```powershell
+.\run_jargent.ps1
+```
+
+If PowerShell blocks scripts, use:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup.ps1
 ```
 
 Say `Jargent` to activate voice input. Say `exit.` to save the current conversation and stop.
