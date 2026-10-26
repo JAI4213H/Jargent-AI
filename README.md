@@ -45,30 +45,47 @@ The result is returned to the model
 JARGENT reports the result by text and voice
 ```
 
-## Setup on another Windows laptop
+## Install on another Windows laptop
 
-Install Python 3.10 or newer, download this project, open PowerShell in its folder, and run:
+### 1. Install Python
+
+Install Python 3.10 or newer from [python.org](https://www.python.org/downloads/). During installation, enable **Add Python to PATH**.
+
+### 2. Download JARGENT
+
+Open PowerShell and run:
+
+```powershell
+git clone https://github.com/JAI4213H/ToolForge-Agentic-AI.git
+cd ToolForge-Agentic-AI
+```
+
+If Git is not installed, download the repository as a ZIP from GitHub, extract it, and open PowerShell in the extracted folder.
+
+### 3. Run setup
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\setup.ps1
 ```
 
-The setup script installs the Python packages, downloads the Whisper and Piper voice models, asks for your Groq API key, and saves it only in your Windows user environment. The model files are downloaded locally and are not stored in Git.
+The setup script installs the Python packages, downloads the Whisper and Piper voice models, and asks for your Groq API key. The key is saved only in your Windows user environment. Model files are downloaded locally and are not stored in Git.
 
-Start JARGENT later with:
+### 4. Start JARGENT
 
 ```powershell
 .\run_jargent.ps1
 ```
 
-If PowerShell blocks scripts, use:
+Say `Jargent` to activate voice input. Say `exit.` to save the current conversation and stop.
+
+### Troubleshooting
+
+If PowerShell blocks scripts, run setup with:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\setup.ps1
 ```
-
-Say `Jargent` to activate voice input. Say `exit.` to save the current conversation and stop.
 
 ## Why JARGENT is different from Codex
 
